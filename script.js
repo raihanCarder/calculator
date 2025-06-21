@@ -23,7 +23,8 @@ const nineBtn = document.getElementById("nine");
 
 // Intializations
 
-let currExpression = "";
+let currExpression = "0";
+let resultText = false;
 
 const numberConverter = {
     zero: "0",
@@ -53,11 +54,30 @@ const operationBtns = [addBtn, minusBtn, multiplyBtn, divideBtn, moduloBtn];
 // Add to Expression functions
 
 function addNumberToExpression(id) {
-    currExpression += numberConverter[id];
-    console.log(currExpression);
+
+    if (resultText) {
+        currExpression = `${numberConverter[id]}`;
+        resultText = false;
+        updateText();
+        return;
+    }
+
+    if (currExpression === "0" && numberConverter[id] === "0") {
+        return;
+    }
+
+    if (currExpression === "0" && numberConverter[id] !== "0") {
+        currExpression = numberConverter[id];
+    }
+    else {
+        currExpression += numberConverter[id];
+    }
+    updateText();
 }
 
 function addOperatorToExpression(id) {
+
+    resultText = false;
 
     if (currExpression.length === 0) {
         currExpression = "0";
@@ -71,25 +91,62 @@ function addOperatorToExpression(id) {
 
     if (operators.test(currExpression[end - 1]) && currExpression[end] === " ") {
         currExpression = currExpression.slice(0, end - 2) + ` ${operationsConverter[id]} `;
-
-        // test
-
-        console.log(currExpression);
-        console.log("changed sign");
+        updateText();
         return;
+    }
+
+    if (isValidOperation()) {
+        operate();
     }
 
     if (operators.test(currExpression)) {
         if (/ [+\-*/%] /.test(currExpression)) {
             return;
-            //later on check if valid input if so then evaluate
         }
     }
 
     currExpression += ` ${operationsConverter[id]} `;
+    updateText();
+}
 
-    // testing
-    console.log(currExpression);
+function addDecimal() {
+
+    if (resultText) {
+        currExpression = "0";
+        resultText = false;
+    }
+
+    const operator = / [+\-*/%] /;
+
+    if (operator.test(currExpression)) {
+        let searchSection = currExpression;
+
+        if (currExpression[0] === "-") {
+            searchSection = currExpression.substring(1);
+        }
+
+        let operator = searchSection.search(/[+\-*/%]/);
+        let sub2 = searchSection.substring(operator, currExpression.length);
+
+        if (sub2.includes(".")) {
+            return;
+        }
+        else {
+            currExpression += "."
+        }
+    }
+    else if (currExpression.includes(".")) {
+        return;
+    }
+    else {
+
+        if (currExpression === "0") {
+            currExpression = "0."
+        } else {
+            currExpression += "."
+        }
+    }
+    updateText();
 }
 
 // Operations 
@@ -108,18 +165,21 @@ function multiply(a, b) {
 
 function divide(a, b) {
     if (b === 0) {
-        alert("Cannot Divide By Zero!")
-        currExpression = "";
         return;
     }
     return a / b;
 }
 
 function modulo(a, b) {
+    if (b === 0) {
+        return;
+    }
     return a % b;
 }
 
 function isValidOperation() {
+
+    // resultText = false;
 
     if (currExpression.length === 0) {
         return false;
@@ -127,7 +187,7 @@ function isValidOperation() {
 
     const fullExpression = currExpression.split(" ");
 
-    if (fullExpression.includes("") || fullExpression.length < 3) {
+    if (fullExpression.includes("") || fullExpression.length < 3 || fullExpression.includes(".")) {
         return false;
     }
 
@@ -141,57 +201,62 @@ function operate() {
     }
 
     const fullExpression = currExpression.split(" ");
-
-    console.log(fullExpression);
-
     const num1 = Number(fullExpression[0]);
     const operation = fullExpression[1];
     const num2 = Number(fullExpression[2]);
 
     switch (operation) {
         case "+":
-            currExpression = String(add(num1, num2));
+            currExpression = String(parseFloat(add(num1, num2).toFixed(8)));
             break;
         case "-":
-            currExpression = String(subtract(num1, num2));
+            currExpression = String(parseFloat(subtract(num1, num2).toFixed(8)));
             break;
         case "/":
-            currExpression = String(divide(num1, num2));
+            if (num2 === 0) {
+                alert("Cannot Divide By Zero!")
+                currExpression = "";
+                updateText();
+            }
+            currExpression = String(parseFloat(divide(num1, num2).toFixed(8)));
             break;
         case "*":
-            currExpression = String(multiply(num1, num2));
+            currExpression = String(parseFloat(multiply(num1, num2).toFixed(8)));
             break;
         case "%":
-            currExpression = String(modulo(num1, num2));
+            if (num2 === 0) {
+                alert("Cannot Modulo By Zero!")
+                currExpression = "";
+                updateText();
+            }
+            currExpression = String(parseFloat(modulo(num1, num2).toFixed(8)));
             break;
         default:
             console.log("ERROR");
             break;
     }
-
-    // if (operation === "/") {
-    //     currExpression = String(divie(num1, num2));
-    // }
-    // else uf(operation === "*"){
-    //     currExpression = String
-    // }
-
-    console.log(currExpression);
+    updateText();
 }
-
 
 // Calculator helpers
 
+function updateText() {
+    if (currExpression === "") {
+        calculatorText.textContent = 0;
+    }
+    else {
+        calculatorText.textContent = `${currExpression}`;
+    }
+}
+
 function clearExpression() {
     currExpression = "";
-
-    //testing
-
-    console.log(currExpression);
+    resultText = false;
+    updateText();
 }
 
 function deleteChar() {
-
+    resultText = false;
     if (currExpression.length === 0) {
         return;
     }
@@ -209,21 +274,40 @@ function deleteChar() {
         currExpression = currExpression.slice(0, end); // deletes char
     }
 
-
-
-    //test
-    console.log(currExpression);
+    updateText();
 }
 
 
 
 // Event Listeners
+
 numberBtns.forEach((btn) => {
     btn.addEventListener("click", (e) => addNumberToExpression(e.target.id));
 })
 
-operationBtns.forEach((btn) => btn.addEventListener("click", (e) => addOperatorToExpression(e.target.id)));
+document.addEventListener("keydown", (e) => {
+    if (e.key >= "0" && e.key <= "9") {
+        const numberConverterFlipped = {
+            "0": "zero",
+            "1": "one",
+            "2": "two",
+            "3": "three",
+            "4": "four",
+            "5": "five",
+            "6": "six",
+            "7": "seven",
+            "8": "eight",
+            "9": "nine",
+        };
+        addNumberToExpression(numberConverterFlipped[e.key]);
+    }
+});
 
+operationBtns.forEach((btn) => btn.addEventListener("click", (e) => addOperatorToExpression(e.target.id)));
 clearBtn.addEventListener("click", clearExpression);
 deleteBtn.addEventListener("click", deleteChar);
-equalsBtn.addEventListener("click", () => operate());
+equalsBtn.addEventListener("click", () => {
+    resultText = true;
+    operate();
+});
+decimalBtn.addEventListener("click", addDecimal);

@@ -69,9 +69,11 @@ body {
     border-radius: 10px;
     color: var(--text-color);
     padding: 5px;
-    white-space: nowrap;
-    overflow: hidden;
+    max-width: 350px;
+    overflow-y: auto;
+
 }
+
 
 .calculator-buttons {
     display: flex;
@@ -117,4 +119,12 @@ button:hover {
 
 .operator {
     background-color: #FF9500;
+}
+
+#calculator-text {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    text-align: right;
 }
