@@ -69,6 +69,8 @@ body {
     border-radius: 10px;
     color: var(--text-color);
     padding: 5px;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .calculator-buttons {
