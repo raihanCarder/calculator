@@ -1,5 +1,5 @@
 # Calculator
-Calculator inspired by the Iphone Calculator made with Js, HTML/CSS
+Basic Calculator inspired by the Iphone Calculator.
 
 Includes Addition, Subtraction, Multiplication, divison, and many other features!
 
